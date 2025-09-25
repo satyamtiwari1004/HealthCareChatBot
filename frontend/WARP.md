@@ -10,10 +10,19 @@ This is the **React TypeScript frontend** for a Healthcare Chatbot application. 
 
 ### Development
 ```bash
-npm start                    # Start development server on http://localhost:3000
-npm run build               # Build production bundle
-npm test                    # Run tests in watch mode
+npm install                 # ALWAYS run first - install dependencies
+npm start                   # Start development server on http://localhost:3000
+npm run build              # Build production bundle
+npm test                   # Run tests in watch mode
 npm test -- --coverage     # Run tests with coverage report
+```
+
+### Quick Setup (First Time)
+```bash
+# Run these commands in order:
+npm install
+npm start
+# App should open at http://localhost:3000
 ```
 
 ### Package Management
@@ -128,3 +137,105 @@ This frontend is part of a larger Healthcare Chatbot system:
 - **Database**: JSON file-based conversation storage in backend
 
 The application prioritizes user safety with medical disclaimers and appropriate severity assessment of symptoms.
+
+## 🚨 Troubleshooting & Known Issues
+
+### CSS Compilation Errors
+**Problem**: `Unexpected }` or CSS syntax errors during `npm start`
+
+**Specific Issue Found**: Lines 282-286 in `App.css` had malformed CSS:
+```css
+/* WRONG - This caused compilation failure */
+.chat-messages::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+  }  /* <-- Extra brace */
+  to {
+    transform: rotate(360deg);
+  }
+}
+```
+
+**Solution**: Check `App.css` for:
+- Unmatched opening/closing braces `{ }`
+- Incomplete keyframe animations (missing `@keyframes` declaration)
+- Missing semicolons in CSS properties
+- Malformed media queries or selectors
+- Orphaned animation keyframes without parent `@keyframes` rule
+
+**Prevention**: Always validate CSS syntax before committing. Use VSCode CSS IntelliSense or online validators.
+
+### Backend Connection Issues
+**Problem**: Frontend shows "Sorry, I encountered an error" messages
+**Solution**: 
+1. Ensure backend is running: `cd ../backend && ./start.sh`
+2. Check backend is accessible at `http://localhost:8000`
+3. Verify `.env` file exists in parent directory with valid OpenAI API key
+
+### Dependency Issues
+**Problem**: `npm start` fails with module errors
+**Solution**:
+```bash
+rm -rf node_modules package-lock.json
+npm install
+npm start
+```
+
+### Security Vulnerabilities (Development)
+**Problem**: `npm audit` shows vulnerabilities
+**Note**: Current vulnerabilities are in development dependencies (webpack-dev-server, postcss) and don't affect production. Avoid `npm audit fix --force` as it may break the build.
+
+### Port Already in Use
+**Problem**: "Port 3000 is already in use"
+**Solution**: 
+- Kill existing process: `lsof -ti:3000 | xargs kill -9`
+- Or choose different port when prompted by React scripts
+
+## 🛠️ Development Best Practices
+
+### Before Making Changes
+1. **Always test the app runs**: `npm start` before making changes
+2. **Check git status**: Ensure you understand current state
+3. **Create feature branches**: Don't work directly on main/develop
+
+### CSS Editing Guidelines
+- **Validate syntax**: Use VSCode CSS validation or online CSS validators
+- **Test immediately**: Run `npm start` after CSS changes to catch syntax errors
+- **Backup complex changes**: Comment out old code before replacing
+
+### Code Quality
+- **TypeScript**: Pay attention to type errors in VSCode
+- **ESLint**: Address linting warnings shown in editor
+- **Testing**: Run `npm test` before committing changes
+
+### Git Workflow
+```bash
+git status                  # Check current state
+git add .                   # Stage changes
+git commit -m "message"     # Commit with clear message
+git push origin branch-name # Push to remote
+```
+
+### Application Testing Checklist
+**Before committing any changes, verify:**
+
+1. **Frontend Compiles**: `npm start` runs without errors
+2. **UI Loads**: App displays at `http://localhost:3000`
+3. **Chat Interface**: Input field and send button are functional
+4. **Error Handling**: App shows appropriate message when backend is down
+5. **Responsive Design**: Test on mobile viewport (DevTools)
+6. **TypeScript**: No TS errors in VSCode or terminal output
+
+**Full System Test** (requires backend):
+1. Start backend: `cd ../backend && ./start.sh`
+2. Verify backend responds: `curl http://localhost:8000/health` (if health endpoint exists)
+3. Test chat functionality: Send a test message like "I have a headache"
+4. Verify response appears with appropriate styling
+
+**Quick Smoke Test**:
+```bash
+npm install
+npm start
+# Wait for browser to open, verify no console errors
+# Ctrl+C to stop
+```
